@@ -104,13 +104,9 @@ pmint_allcoeffs(expr, vars) := block(
     for e in eqs do (
       for i:0 thru hipow(e,v) do (
         if ratcoeff(e,v,i)#0 then
-          eqs1 : append(eqs1, [ratcoeff(e,v,i)])
-      )
-    ),
-    eqs : eqs1
-  ),
-  eqs
-)$
+          eqs1 : append(eqs1, [ratcoeff(e,v,i)]))),
+    eqs : eqs1),
+  eqs)$
 
 
 /**************************************
@@ -150,8 +146,7 @@ get_special_polys(f, l) :=
     if pol#false then
       [pol[1](subst(l,f)), pol[2]]
     else
-      0
-  )$
+      0)$
 
 /**************************************
  *
@@ -221,11 +216,9 @@ pmint(expr, x) := block(
   if not(atom(fint)) and part(fint, 0)#'integrate then block(
     [dfint : diff(fint, x)],
     if trigrat(radcan(ratsimp(dfint-expr)))#0 then print("Solution check failes!"),
-    fint
-  )
+    fint)
   else
-    'integrate(expr, x)
-  )$
+    'integrate(expr, x))$
 
 /**************************************
  *
@@ -275,8 +268,7 @@ pm_integrate(f, d, q, vars, ls) := block(
     sol : try_integral(f, d, q, vars, cand, lunk, spl[1], spl[2], splq[1], ls, false),
   if sol[1]=true then
     'integrate(expr, x)
-  else sol[2]
-  )$
+  else sol[2])$
 
 /**************************************
  *
@@ -325,8 +317,7 @@ try_integral(f, d, q, vars, cand, lunk, l1, l2, l3, ls, real) := block(
   candidate1 : subst(makelist(u=0, u, redund), candidate1),
 
   if sol=[] or sol=all then [true, []]
-  else [false, subst(sol, candidate1)]
-)$
+  else [false, subst(sol, candidate1)])$
 
 /**************************************
  *
@@ -346,9 +337,7 @@ enumerate_monoms(vars, d) := block(
     s : enumerate_monoms(v, d),
     for i:1 thru d do
     s : union(s, apply(set, makelist(x^i*w, w, listify(enumerate_monoms(v,d-i))))),
-    s
-  )
-)$
+    s))$
 
 /**************************************
  *
@@ -380,8 +369,7 @@ split_factor(p, d) := block(
   s : ratsimp( gcd(q,total_derivation(d[1], d[2], q))/gcd(q,diff(q,x)) ),
   if pmint_total_degree(s)=0 then return([first(spl), q*second(spl)]),
   splh : split_factor(ratsimp(q/s), d),
-  [first(spl)*first(splh)*s, second(spl)*second(splh)]
-)$
+  [first(spl)*first(splh)*s, second(spl)*second(splh)])$
 
 deflation(p, d) := block(
   [si, x, c, q],
@@ -406,5 +394,4 @@ pmint_factors(expr, real) := block(
   if real=true then
     delete(%cc%, makelist(if not(atom(u)) and part(u, 0)="^" then first(u) else u, u, args(factor(ff))))
   else
-    delete(%cc%, makelist(if not(atom(u)) and part(u, 0)="^" then first(u) else u, u, args(gfactor(ff))))
-)$
+    delete(%cc%, makelist(if not(atom(u)) and part(u, 0)="^" then first(u) else u, u, args(gfactor(ff)))))$
