@@ -263,8 +263,7 @@
 		     epsilonf)
 		  (setf rmax k
 			epsilonf (abs (- (aref f (1- k))
-					 (aref f k)))))
-	      )
+					 (aref f k))))))
 	
 	(incf i)
 	
@@ -297,10 +296,7 @@
 	     
 	     (setf (aref p 0) (aref x 1))))
 	  (setf norm (vector-norm (cdr (m- (aref x 1) (aref x 0)))))
-	  (setf df (abs (- (aref fx 1) (aref fx 0))))
-	  )
-	)
-      )
+	  (setf df (abs (- (aref fx 1) (aref fx 0)))))))
     
     (if (= i maxst)
 	($error "`powell-search' failed to converge."))
