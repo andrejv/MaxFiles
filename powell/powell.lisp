@@ -303,6 +303,16 @@
     (aref x 1)))
 
 (defun $find_minimum (expr vars init &rest optional)
+
+  ;; maybe we want find_minimum_brent
+  (when (and (atom vars)
+	     (car optional)
+	     ($numberp ($float (car optional))))
+    (return-from $find_minimum
+      (apply #'$find_minimum_brent
+	     (append (list expr vars init)
+		     optional))))
+  
   (let ((epsilon 1e-6)
 	(max-iter 100)
 	(init-step 0.3)
