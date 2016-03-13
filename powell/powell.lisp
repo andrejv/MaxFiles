@@ -316,10 +316,10 @@
 	      (let ((option (cadr opt))
 		    (value (caddr opt)))
 		(case option
-		  ('$line_step (setq init-step ($float value)))
-		  ('$epsilon (setq epsilon ($float value)))
-		  ('$algorithm (setq $search_algorithm value))
-		  ('$max_iter (setq max-iter value)) ))))
+		  ($line_step (setq init-step ($float value)))
+		  ($epsilon (setq epsilon ($float value)))
+		  ($algorithm (setq $search_algorithm value))
+		  ($max_iter (setq max-iter value)) ))))
 
     (unless (member $search_algorithm '($brent $golden_ratio))
       ($error "Unknown algorithm for 1D minimization:" $search_algorithm))
@@ -354,8 +354,8 @@
 	      (let ((option (cadr opt))
 		    (value (caddr opt)))
 		(case option
-		  ('$epsilon (setq epsilon ($float value)))
-		  ('$max_iter (setq max-iter value)) ))))
+		  ($epsilon (setq epsilon ($float value)))
+		  ($max_iter (setq max-iter value)) ))))
 
     (let ((fun (coerce-float-fun expr `((mlist) ,var))))
       `((mlist simp)
