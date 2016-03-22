@@ -365,6 +365,7 @@ split_factor(p, d) := block(
   if length(si)=0 then return([1,p]),
   x : first(si),
   c : content(p, x), q : c[2], c : c[1],
+  if c=p then return([1,p]),
   spl : split_factor(c, d),
   s : ratsimp( gcd(q,total_derivation(d[1], d[2], q))/gcd(q,diff(q,x)) ),
   if pmint_total_degree(s)=0 then return([first(spl), q*second(spl)]),
@@ -377,6 +378,7 @@ deflation(p, d) := block(
   if length(si)=0 then return(p),
   x : first(si),
   c : content(p, x), q : c[2], c : c[1],
+  if c=p then return(p),
   deflation(c, d) * gcd(q, diff(q, x))
 )$
 
