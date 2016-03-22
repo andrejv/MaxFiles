@@ -368,10 +368,9 @@
 		  ($max_iter (setq max-iter value)) ))))
 
     (let ((fun (coerce-float-fun expr `((mlist) ,var))))
-      `((mlist simp)
-	((mequal simp)
-	 ,var ,(brent-search fun (min a b) (max a b) (/ (+ a b) 2.0)
-			     epsilon max-iter)))) ))
+      (list '(mequal simp)
+            var (brent-search fun (min a b) (max a b) (/ (+ a b) 2.0)
+                              epsilon max-iter)))) )
 
 (defun $brent (&rest args)
   (apply #'$find_minimum_brent args))
