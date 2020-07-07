@@ -114,6 +114,29 @@ define_variable(%k2, %k2, any)$
  *
  *************************************/
 
+/*
+wrapper around the algorithm allowing for simplification of the result
+*/
+pmints(intexp, [simpfun]):=block ([ret:nil ],
+	if freeof('integrate, intexp ) then return(intexp), 
+	sop:op(intexp),
+	if sop="+" or sop="-" then  
+		ret: map(lambda([u], pmints (u, simpfun)), intexp) 
+ 	elseif sop=nounify(integrate) then (
+		ret:subst(nounify(integrate)= lambda ([u,v], 
+				pmint(u,v)), intexp
+		)
+	),
+	if not emptyp(simpfun) then (
+		simpfun:flatten(simpfun),
+		if not emptyp(simpfun) then (
+			simpfun:simpfun[1],
+			ret: apply(simpfun, [ret])
+		)
+	),
+	ret
+);
+
 pmint(expr, x) := block(
   [ff, si, si1, li, lin, lout, ld, q, d, l, vars, dx, ls, fint, lc, si0],
 
