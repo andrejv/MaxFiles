@@ -8,68 +8,7 @@
  *
  **************************************/
 
-/**************************************
- *
- *  Examples from the Maple program page:
- *
- *   (+)  (x^7-24*x^4-4*x^2+8*x-8)/(x^8+6*x^6+12*x^4+8*x^2);    <-  set gcd to spmod!
- *   (++) (x-tan(x))/tan(x)^2 + tan(x);
- *   (++) (1+x+x*exp(x))*(x+log(x)+exp(x)-1)/(x+log(x)+exp(x))^2/x;
- *   (++) exp(-x^2)*erf(x)/(erf(x)^3-erf(x)^2-erf(x)+1);
- *   (++) (x-airy_ai(x)*airy_dai(x))/(x^2-airy_ai(x)^2);
- *   (++) x^2*airy_ai(x);
- *   (--) all bessel function examples - bessel functions behave differently
- *        in maxima - the algorithm is not expected to work [see (*)]
- *   (--) whittaker_w - not defined in maxima [see (**)]
- *   (++) lambert_w(x); [see (***)]
- *   (+)  sin(lambert_w(x));   <- takes a long time
- *   (+)  ((x^2+2)*lambert_w(x^2)^2 + x^2*(2*lambert_w(x^2)+1))/x/(1 + lambert_w(x^2))^3;
- *   (--) (2*lambert_w(x^2)*(lambert_w(x^2)+a*x)*cos(lambert_w(x^2))+a*x*(lambert_w(x^2)+1)+2*lambert_w(x^2))/
- *           (x*(lambert_w(x^2)+1)*(lambert_w(x^2)+a*x));
- *
- *   omega(x) := lambert_w(exp(x))
- *
- *   (++)  omega(x)
- *   (--)  (1 + omega(x) * (2 + cos(omega(x)) * (x + omega(x)))) / (1 + omega(x)) / (x + omega(x));
- *
- *
- *   (++) correct and agrees with maple answer
- *   (+)  correct but differs from maple answer
- *   (--) failes (or takes too long)
- *   (-)  wrong
- *
- *
- *  (*)   Bessel functions
- *
- *   Define bessj and bessj1 functions as
- *      bessj(n, x):=bessel_j(n, x)
- *   and
- *      bessj1(n, x):=besel_j(n+1, x).
- *   Then the derivarives are
- *     gradef(bessj(n, x), 'diff(bessj(n, x), n), -bessj1(n, x) + n*bessj(n, x)/x);
- *     gradef(bessj1(n, x), 'diff(bessj1(n, x), n), bessj(n, x)-(n+1)*bessj1(n, x)/x);
- *   Now
- *
- *   (++) bessj1(n, x)/bessj(n, x);
- *   (++) -(x*bessj1(n, x)-n*bessj(n, x))/x
- *
- *  (**)  Whittaker function
- *
- *     whittaker_w(x,m,n) = WhittakerW(m,n,x)
- *     whittaker_w1(x,m,n) = WhittakerW(m+1,n,x)
- *     gradef(whittaker_w(x,m,n), (1/2-m/x)*whittaker_w(x,m,n)-whittaker_w1(x,m,n))
- *     gradef(whittaker_w1(x,m,n), ((m+1)/x-1/2)*whittaker_w1(x,m,n) - (n^2-(m+1/2)^2)*whittaker_w(x,m,n)/x)
- *
- *   (++) whittaker_w1(x,m,n)/whittaker_w(x,m,n)
- *
- *  (***) Lambert W function
- *
- *   lambert_w in not supported in maxima. pmint adds gradef(lambert_w(x), lambert_w(x)/(x*(lambert_w(x)+1)))$
- *   and put(lambert_w, [lambda([u], u), true], 'darboux_poly)$ to add support for integrating lambert_w.
- *
- **************************************/
-
-/**************************************
+ /**************************************
  *
  *  Implementation of some utility functions I could not find in maxima
  *
@@ -83,9 +22,9 @@ atom_parts(expr) :=
   else if atom(expr) then {expr}
   else if part(expr, 0)="^" and numberp(part(expr, 2)) then atom_parts(part(expr, 1))
   else if member(part(expr, 0), ["+", "-", "*", "/"]) then apply(union, map(atom_parts, args(expr)))
-  else union({expr}, lreduce(union, map(atom_parts, args(expr))))$
+  else union({expr}, lreduce(union, map(atom_parts, args(expr))));
 
-pmint_lcm(lst) := apply("*", lst)/lreduce('gcd, lst)$
+pmint_lcm(lst) := apply("*", lst)/lreduce('gcd, lst);
 
 
 pmint_total_degree(expr) :=
@@ -106,7 +45,7 @@ pmint_allcoeffs(expr, vars) := block(
         if ratcoeff(e,v,i)#0 then
           eqs1 : append(eqs1, [ratcoeff(e,v,i)]))),
     eqs : eqs1),
-  eqs)$
+  eqs);
 
 
 /**************************************
@@ -117,16 +56,17 @@ pmint_allcoeffs(expr, vars) := block(
  **************************************/
 
 define_variable(convert_trig_functions, true, boolean)$
-matchdeclare(x, true)$
-defrule(sin2tan, sin(x), 2*tan(x/2)/(tan(x/2)^2+1))$
-defrule(csc2tan, sin(x), tan(x/2)(tan(x/2)^2+1)/(2*tan(x/2)))$
-defrule(cos2tan, cos(x), (1-tan(x/2)^2)/(1+tan(x/2)^2))$
-defrule(sec2tan, sec(x), (1+tan(x/2)^2)/(1-tan(x/2)^2))$
+matchdeclare(%x, true)$
+defrule(sin2tan, sin(%x), 2*tan(%x/2)/(tan(%x/2)^2+1))$
+defrule(csc2tan, sin(%x), tan(%x/2)(tan(%x/2)^2+1)/(2*tan(%x/2)))$
+defrule(cos2tan, cos(%x), (1-tan(%x/2)^2)/(1+tan(%x/2)^2))$
+defrule(sec2tan, sec(%x), (1+tan(%x/2)^2)/(1-tan(%x/2)^2))$
+
 convert_to_tan(expr) := ratsimp(apply1(trigsimp(expr), sin2tan, cos2tan, sec2tan, csc2tan))$
 
 gradef(tan(x), 1+tan(x)^2)$
 gradef(lambert_w(x), lambert_w(x)/(x*(lambert_w(x)+1)))$
-
+gradef(omega(x), omega(x)/(1+omega(x)))$
 /**************************************
  *
  *   Special darboux polys
@@ -138,6 +78,7 @@ gradef(lambert_w(x), lambert_w(x)/(x*(lambert_w(x)+1)))$
 put(tan, [lambda([u], 1+u^2), false], 'darboux_poly)$
 put(tanh, [lambda([u], 1-u^2), false], 'darboux_poly)$
 put(lambert_w, [lambda([u], u), true], 'darboux_poly)$
+put(omega, [lambda([u], u), true], 'darboux_poly)$
 
 get_special_polys(f, l) :=
   if atom(f) then 0
