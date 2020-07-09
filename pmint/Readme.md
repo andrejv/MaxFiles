@@ -28,9 +28,8 @@ A maxima implementation of [Poor Man's integrator](http://www-sop.inria.fr/cafe/
  *   (--) (2*lambert_w(x^2)*(lambert_w(x^2)+a*x)*cos(lambert_w(x^2))+a*x*(lambert_w(x^2)+1)+2*lambert_w(x^2))/
  *           (x*(lambert_w(x^2)+1)*(lambert_w(x^2)+a*x));
  *
- *   omega(x) := lambert_w(exp(x))
  *
- *   (++)  omega(x)
+ *   (++)  omega(x) [see (*)]
  *   (--)  (1 + omega(x) * (2 + cos(omega(x)) * (x + omega(x)))) / (1 + omega(x)) / (x + omega(x));
  *
  *
@@ -39,7 +38,8 @@ A maxima implementation of [Poor Man's integrator](http://www-sop.inria.fr/cafe/
  *   (--) failes (or takes too long)
  *   (-)  wrong
  *
- *
+ *  (*) the Omega function is not supported in Maxima but can be defined as
+ *  omega(x) := lambert_w(exp(x)) 
  *
  *  (**)  Whittaker function
  *
