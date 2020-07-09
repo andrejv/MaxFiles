@@ -1,11 +1,14 @@
 /**************************************
  *
  *  PMINT : Poor man's integrator
- *
+ *   http://www-sop.inria.fr/cafe/Manuel.Bronstein/pmint/
  *  This is a port of pmint Maple program by Manuel Bronstein to maxima.
  *
  *  Ported by Andrej Vodopivec (andrej.vodopivec@gmail.com).
  *
+ *  Dimiter Prodanov:
+ *  Support for Wright Omega function added
+ *  Support for BesselJ and BesselI functions added 
  **************************************/
 
  /**************************************
@@ -20,8 +23,8 @@ pm_display(lev, [arg]) := if lev<=verbose_level then apply(print, arg)$
 atom_parts(expr) :=
   if numberp(expr) then {}
   else if atom(expr) then {expr}
-  else if part(expr, 0)="^" and numberp(part(expr, 2)) then atom_parts(part(expr, 1))
-  else if member(part(expr, 0), ["+", "-", "*", "/"]) then apply(union, map(atom_parts, args(expr)))
+  else if op(expr)="^" and numberp(part(expr, 2)) then atom_parts(part(expr, 1))
+  else if member(op(expr), ["+", "-", "*", "/"]) then apply(union, map(atom_parts, args(expr)))
   else union({expr}, lreduce(union, map(atom_parts, args(expr))));
 
 pmint_lcm(lst) := apply("*", lst)/lreduce('gcd, lst);
@@ -30,10 +33,10 @@ pmint_lcm(lst) := apply("*", lst)/lreduce('gcd, lst);
 pmint_total_degree(expr) :=
   if numberp(expr) or floatnump(expr) or bfloatp(expr) then 0
   else if atom(expr) then 1
-  else if member(part(expr, 0), ["+", "-"]) then apply(max, map(pmint_total_degree, args(expr)))
-  else if part(expr, 0)="*" then apply("+", delete(0, map(pmint_total_degree, args(expr))))
-  else if part(expr, 0)="/" then pmint_total_degree(part(expr, 1)) - pmint_total_degree(part(expr, 1))
-  else if part(expr, 0)="^" and integerp(part(expr, 2)) then part(expr, 2)
+  else if member(op(expr), ["+", "-"]) then apply(max, map(pmint_total_degree, args(expr)))
+  else if op(expr)="*" then apply("+", delete(0, map(pmint_total_degree, args(expr))))
+  else if op(expr)="/" then pmint_total_degree(part(expr, 1)) - pmint_total_degree(part(expr, 1))
+  else if op(expr)="^" and integerp(part(expr, 2)) then part(expr, 2)
   else 1$
 
 pmint_allcoeffs(expr, vars) := block(
@@ -65,20 +68,80 @@ defrule(sec2tan, sec(%x), (1+tan(%x/2)^2)/(1-tan(%x/2)^2))$
 convert_to_tan(expr) := ratsimp(apply1(trigsimp(expr), sin2tan, cos2tan, sec2tan, csc2tan))$
 
 gradef(tan(x), 1+tan(x)^2)$
+/*
+Lambert W function
+*/
 gradef(lambert_w(x), lambert_w(x)/(x*(lambert_w(x)+1)))$
+/*
+Wright Omega function
+*/
 gradef(omega(x), omega(x)/(1+omega(x)))$
+
+/*
+* Workarounds for Bessel functions
+possible to define directly
+gradef( bessel_j(n,x), x, (n*bessel_j(n,x))/x-bessel_j(n+1,x) );
+gradef( bessel_i(n,x), x, (n*bessel_i(n,x))/x+bessel_i(n+1,x) );
+but the computation is slow
+*/
+
+gradef(bessj(n, x),  x,  n*bessj(n, x)/x - bessj1(n, x)  );
+gradef(bessj1(n, x), x,  bessj(n, x)-(n+1)*bessj1(n, x)/x );
+
+gradef(bessy(n, x),  x,  n*bessy(n, x)/x - bessy1(n, x)  );
+gradef(bessy1(n, x), x,  bessy(n, x)-(n+1)*bessy1(n, x)/x );
+
+gradef(bessi(n, x),  x,  n*bessi(n, x)/x + bessi1(n, x)  );
+gradef(bessi1(n, x), x,  bessi(n, x)-(n+1)*bessi1(n, x)/x );
+
+gradef(bessk(n, x),  x,  n*bessk(n, x)/x + bessk1(n, x)  );
+gradef(bessk1(n, x), x,  bessk(n, x)-(n+1)*bessk1(n, x)/x );
+
+matchdeclare( %n, atom)$
+defrule(bessj2b, bessel_j( %n, %x), bessj( %n, %x)) ;
+defrule(b2bessj,  bessj( %n, %x), bessel_j( %n, %x)) ;
+
+defrule(bessy2b, bessel_y( %n, %x), bessy( %n, %x)) ;
+defrule(b2bessy,  bessy( %n, %x), bessel_y( %n, %x)) ;
+
+defrule(bessi2b, bessel_i( %n, %x), bessi( %n, %x)) ;
+defrule(b2bessi,  bessi( %n, %x), bessel_i( %n, %x)) ;
+
+defrule(bessk2b, bessel_k( %n, %x), bessk( %n, %x)) ;
+defrule(b2bessk,  bessk( %n, %x), bessel_k( %n, %x)) ;
+
+defrule(bessj2b1, bessel_j( %n+1, %x), bessj1( %n, %x)) ;
+defrule(b2bessj1,  bessj1( %n, %x), bessel_j( %n+1, %x)) ;
+
+defrule(bessy2b1, bessel_y( %n+1, %x), bessy1( %n, %x)) ;
+defrule(b2bessy1,  bessy1( %n, %x), bessel_y( %n+1, %x)) ;
+
+defrule(bessi2b1, bessel_i( %n+1, %x), bessi1( %n, %x)) ;
+defrule(b2bessi1,  bessi1( %n, %x), bessel_i( %n+1, %x)) ;
+
+defrule(bessk2b1, bessel_k( %n+1, %x), bessk1( %n, %x)) ;
+defrule(b2bessk1,  bessk1( %n, %x), bessel_k( %n+1, %x)) ;
+
+convert_bess2b(expr):=apply1(expr, bessj2b, bessj2b1, bessy2b1, bessy2b, bessi2b, bessi2b1, bessk2b, bessk2b1);
+
+convert_b2bess(expr):=apply1(expr, b2bessj, b2bessj1, b2bessy, b2bessy1, b2bessi, b2bessi1, b2bessk, b2bessk1 );
+
 /**************************************
  *
- *   Special darboux polys
+ *   Special Darboux polynomials
  *   If the second parameter is false, only use it for log parts, otherwise use it
  *   for denominator too.
  *
  **************************************/
 
-put(tan, [lambda([u], 1+u^2), false], 'darboux_poly)$
-put(tanh, [lambda([u], 1-u^2), false], 'darboux_poly)$
-put(lambert_w, [lambda([u], u), true], 'darboux_poly)$
-put(omega, [lambda([u], u), true], 'darboux_poly)$
+put(tan, [ lambda([u], 1+u^2), false], 'darboux_poly)$
+put(tanh, [ lambda([u], 1-u^2), false], 'darboux_poly)$
+put(lambert_w, [ lambda([u], u), true], 'darboux_poly)$
+put(omega, [ lambda([u], u), true], 'darboux_poly)$
+/*
+put(bessj, [ lambda([u], u), true], 'darboux_poly)$
+put(bessj1, [ lambda([u], u), true], 'darboux_poly)$
+*/
 
 get_special_polys(f, l) :=
   if atom(f) then 0
@@ -137,14 +200,22 @@ pmints(intexp, [simpfun]):=block ([ret:nil ],
 	ret
 );
 
+besselp(expr):=not (freeof(bessel_j, expr) and freeof(bessel_i, expr) and  freeof(bessel_y, expr) and  freeof(bessel_k, expr) );
+
 pmint(expr, x) := block(
-  [ff, si, si1, li, lin, lout, ld, q, d, l, vars, dx, ls, fint, lc, si0],
+  [ff, si, si1, li, lin, lout, ld, q, d, l, vars, dx, ls, fint, lc, si0, bconvert:false ],
 
   /* 0) preproces expr */
   if convert_trig_functions then
     ff : convert_to_tan(expr)
   else
     ff : expr,
+ 
+  if besselp( ff) then (
+	ff: convert_bess2b(ff),
+	bconvert:true
+  ),
+ 
   ff : factor(ff),
   pm_display(1, 'function=ff),
 
@@ -157,7 +228,7 @@ pmint(expr, x) := block(
   si : union(subset(si1, lambda([u], is(diff(u,x)#0))), si),
   si : setdifference(si, si0),
   li : reverse(append(args(si0), args(si))),
-  lin : makelist(d=?gensym(), d, li),
+  lin : makelist(d=gensym(), d, li),
   lout : makelist(rhs(d)=lhs(d), d, lin),
   pm_display(1, 'substitution=lin),
 
@@ -177,12 +248,21 @@ pmint(expr, x) := block(
 
   /* 4) integrate substitution */
   fint : subst(lout, pm_integrate(subst(lin, ff), dx, q, vars, ls)),
-  if not(atom(fint)) and part(fint, 0)#'integrate then block(
+
+  if not(atom(fint)) and op(fint)#'integrate then block(
     [dfint : diff(fint, x)],
-    if trigrat(radcan(ratsimp(dfint-expr)))#0 then print("Solution check failes!"),
-    fint)
-  else
-    'integrate(expr, x))$
+    if trigrat(radcan(ratsimp(dfint-expr)))#0 then 
+		if trigrat(radcan(ratsimp(dfint-ff)))#0 then 
+			print("Solution check failes!"),
+	
+	if bconvert then
+	fint: convert_b2bess(fint),
+	
+	fint
+	
+  ) else
+    'integrate(expr, x)
+)$
 
 /**************************************
  *
@@ -195,7 +275,7 @@ pmint(expr, x) := block(
  **************************************/
 
 pm_integrate(f, d, q, vars, ls) := block(
-  [splq, s, ff, df, spl, cden, dg, monomials, cand, lunk, sol, i],
+  [splq, s, ff, df, spl, cden, dg, monomials, cand, lunk, sol, i, listarith:true ],
 
   pm_display(1, 'expr=f),
 
@@ -253,7 +333,7 @@ pm_integrate(f, d, q, vars, ls) := block(
 
 try_integral(f, d, q, vars, cand, lunk, l1, l2, l3, ls, real) := block(
   [candlog, p, candidate, i, sol, candidate1, redund : [], eqs, eqs1,
-   linsolvewarn:false, solve_inconsistent_error:false],
+   linsolvewarn:false, solve_inconsistent_error:false, listarith:true ],
 
   /* Get log part - all factors can appear */
   candlog : append(pmint_factors(l1, real), pmint_factors(l2, real), pmint_factors(l3, real)),
@@ -312,10 +392,10 @@ enumerate_monoms(vars, d) := block(
  *
  **************************************/
 
-total_derivation(lv, ld, expr) := block(
-  [fp:0, i],
+total_derivation(lv, ld, expr) := block([fp:0, i],
   for i:1 thru length(ld) do fp : fp+ld[i]*diff(expr, lv[i]),
-  fp)$
+  fp
+)$
 
 /**************************************
  *
@@ -334,7 +414,8 @@ split_factor(p, d) := block(
   s : ratsimp( gcd(q,total_derivation(d[1], d[2], q))/gcd(q,diff(q,x)) ),
   if pmint_total_degree(s)=0 then return([first(spl), q*second(spl)]),
   splh : split_factor(ratsimp(q/s), d),
-  [first(spl)*first(splh)*s, second(spl)*second(splh)])$
+  [first(spl)*first(splh)*s, second(spl)*second(splh)]
+)$
 
 deflation(p, d) := block(
   [si, x, c, q],
@@ -353,11 +434,11 @@ deflation(p, d) := block(
  *
  **************************************/
 
-pmint_factors(expr, real) := block(
-  [%cc%, ff],
+pmint_factors(expr, real) := block([%cc%, ff],
   ff : expr * %cc%,
   if numberp(expr) or atom(expr) then return([expr]),
   if real=true then
-    delete(%cc%, makelist(if not(atom(u)) and part(u, 0)="^" then first(u) else u, u, args(factor(ff))))
+    delete(%cc%, makelist(if not(atom(u)) and op(u)="^" then first(u) else u, u, args(factor(ff))))
   else
-    delete(%cc%, makelist(if not(atom(u)) and part(u, 0)="^" then first(u) else u, u, args(gfactor(ff)))))$
+    delete(%cc%, makelist(if not(atom(u)) and op(u)="^" then first(u) else u, u, args(gfactor(ff))))
+)$

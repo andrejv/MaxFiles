@@ -43,9 +43,10 @@ A maxima implementation of [Poor Man's integrator](http://www-sop.inria.fr/cafe/
  *  (*)   Bessel functions
  *
  *   Define bessj and bessj1 functions as
- *      bessj(n, x):=bessel_j(n, x)
+ *      bessj(n, x):=bessel_j(n, x);
  *   and
- *      bessj1(n, x):=besel_j(n+1, x).
+ *      bessj1(n, x):=besel_j(n+1, x);
+ *
  *   Then the derivarives are
  *     gradef(bessj(n, x), 'diff(bessj(n, x), n), -bessj1(n, x) + n*bessj(n, x)/x);
  *     gradef(bessj1(n, x), 'diff(bessj1(n, x), n), bessj(n, x)-(n+1)*bessj1(n, x)/x);
