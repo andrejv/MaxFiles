@@ -1,6 +1,6 @@
 # pmint.mac
 
-A maxima implementation of [Poor Man's integrator](http://www-sop.inria.fr/cafe/Manuel.Bronstein/pmint/).
+A Maxima/wxMaxima implementation of [Poor Man's integrator](http://www-sop.inria.fr/cafe/Manuel.Bronstein/pmint/).
 
     (%i1) load(pmint)$
     (%i2) pmint(x*sin(x), x);
@@ -30,7 +30,7 @@ A maxima implementation of [Poor Man's integrator](http://www-sop.inria.fr/cafe/
  *
  *
  *   (++)  omega(x) [see (*)]
- *   (--)  (1 + omega(x) * (2 + cos(omega(x)) * (x + omega(x)))) / (1 + omega(x)) / (x + omega(x));
+ *   (++)  (1 + omega(x) * (2 + cos(omega(x)) * (x + omega(x)))) / (1 + omega(x)) / (x + omega(x));
  *
  *
  *   (++) correct and agrees with maple answer
