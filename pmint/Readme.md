@@ -19,10 +19,10 @@ A maxima implementation of [Poor Man's integrator](http://www-sop.inria.fr/cafe/
  *   (++) exp(-x^2)*erf(x)/(erf(x)^3-erf(x)^2-erf(x)+1);
  *   (++) (x-airy_ai(x)*airy_dai(x))/(x^2-airy_ai(x)^2);
  *   (++) x^2*airy_ai(x);
- *   (--) all bessel function examples - bessel functions behave differently
- *        in maxima - the algorithm is not expected to work [see (*)]
+ *   (++) Bessel functions : bessel_j(n+1,x)/bessel_j(n,x)
+ *   (++) Bessel functions :  (n*bessel_j(n,x))/x-bessel_j(n+1,x)
  *   (--) whittaker_w - not defined in maxima [see (**)]
- *   (++) lambert_w(x); [see (***)]
+ *   (++) lambert_w(x);  
  *   (+)  sin(lambert_w(x));   <- takes a long time
  *   (+)  ((x^2+2)*lambert_w(x^2)^2 + x^2*(2*lambert_w(x^2)+1))/x/(1 + lambert_w(x^2))^3;
  *   (--) (2*lambert_w(x^2)*(lambert_w(x^2)+a*x)*cos(lambert_w(x^2))+a*x*(lambert_w(x^2)+1)+2*lambert_w(x^2))/
@@ -40,20 +40,6 @@ A maxima implementation of [Poor Man's integrator](http://www-sop.inria.fr/cafe/
  *   (-)  wrong
  *
  *
- *  (*)   Bessel functions
- *
- *   Define bessj and bessj1 functions as
- *      bessj(n, x):=bessel_j(n, x);
- *   and
- *      bessj1(n, x):=besel_j(n+1, x);
- *
- *   Then the derivarives are
- *     gradef(bessj(n, x), 'diff(bessj(n, x), n), -bessj1(n, x) + n*bessj(n, x)/x);
- *     gradef(bessj1(n, x), 'diff(bessj1(n, x), n), bessj(n, x)-(n+1)*bessj1(n, x)/x);
- *   Now
- *
- *   (++) bessj1(n, x)/bessj(n, x);
- *   (++) -(x*bessj1(n, x)-n*bessj(n, x))/x
  *
  *  (**)  Whittaker function
  *
@@ -64,9 +50,5 @@ A maxima implementation of [Poor Man's integrator](http://www-sop.inria.fr/cafe/
  *
  *   (++) whittaker_w1(x,m,n)/whittaker_w(x,m,n)
  *
- *  (***) Lambert W function
- *
- *   lambert_w in not supported in maxima. pmint adds gradef(lambert_w(x), lambert_w(x)/(x*(lambert_w(x)+1)))$
- *   and put(lambert_w, [lambda([u], u), true], 'darboux_poly)$ to add support for integrating lambert_w.
  *
  **************************************/
