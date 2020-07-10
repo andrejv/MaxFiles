@@ -153,7 +153,7 @@ get_special_polys(f, l) :=
   if atom(f) or  listp(f) then 0
   else block([pol , sop:op(f)],
   	/*display(sop, f),*/
-	if not symbolp(sop) and not listp(sop) then sop:op(sop),
+	if not symbolp(sop) and not listp(sop) and not sop="^" then sop:op(sop),
 	pol:  get(sop, 'darboux_poly),
     if pol#false then
       [pol[1](subst(l,f)), pol[2]]
