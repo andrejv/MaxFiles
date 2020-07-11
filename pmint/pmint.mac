@@ -131,6 +131,10 @@ convert_bess2b(expr):=apply1(expr, bessj2b, bessj2b1, bessy2b1, bessy2b, bessi2b
 
 convert_b2bess(expr):=apply1(expr, b2bessj, b2bessj1, b2bessy, b2bessy1, b2bessi, b2bessi1, b2bessk, b2bessk1 );
 
+defrule(log2atan, log(%i+%x)-log(%x-%i), -2*%i*atan(%x)  );
+
+convert2atan(expr):=apply1(factor(expr), log2atan);
+
 /**************************************
  *
  *   Special Darboux polynomials
