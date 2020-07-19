@@ -266,13 +266,13 @@ pmint(expr, x) := block(
 
   /* 4) integrate substitution */
   fint : subst(lout, pm_integrate(subst(lin, ff), dx, q, vars, ls)),
-
-  if not(atom(fint)) and op(fint)#'integrate then block(
-    [dfint : diff(fint, x)],
+ 
+  if not(atom(fint)) and op(fint)#'integrate then block([dfint : diff(fint, x)],
     if trigrat(radcan(ratsimp(dfint-expr)))#0 then 
 		if trigrat(radcan(ratsimp(dfint-ff)))#0 then (
 			print("Solution check fails!"),
-			return('integrate(expr, x))
+			fint:'integrate(expr, x),
+			return(fint)
 	),
 	if bconvert then
 		fint: convert_b2bess(fint),
