@@ -71,8 +71,9 @@ defrule(sec2tan, sec(%x), (1+tan(%x/2)^2)/(1-tan(%x/2)^2))$
 
 convert_to_tan(expr) := ratsimp(apply1(trigsimp(expr), sin2tan, cos2tan, sec2tan, csc2tan))$
 
-gradef(tan(x), 1+tan(x)^2)$
+gradef(tan(x),  1+tan(x)^2)$
 gradef(tanh(x), 1-tanh(x)^2)$
+
 /*
 Lambert W function
 */
@@ -134,7 +135,11 @@ convert_b2bess(expr):=apply1(expr, b2bessj, b2bessj1, b2bessy, b2bessy1, b2bessi
 defrule(log2atan, log(%i+%x)-log(%x-%i), -2*%i*atan(%x)  );
 
 convert2atan(expr):=apply1(factor(expr), log2atan);
-
+/*
+matchdeclare([%n,%m], numberp);
+defrule(f2hg, %f[%n,%m], hg);
+convert_hg(expr):=apply1(expr, f2hg);
+*/
 /**************************************
  *
  *   Special Darboux polynomials
@@ -265,11 +270,12 @@ pmint(expr, x) := block(
   if not(atom(fint)) and op(fint)#'integrate then block(
     [dfint : diff(fint, x)],
     if trigrat(radcan(ratsimp(dfint-expr)))#0 then 
-		if trigrat(radcan(ratsimp(dfint-ff)))#0 then 
+		if trigrat(radcan(ratsimp(dfint-ff)))#0 then (
 			print("Solution check fails!"),
-	
+			return('integrate(expr, x))
+	),
 	if bconvert then
-	fint: convert_b2bess(fint),
+		fint: convert_b2bess(fint),
 	
 	fint
 	
