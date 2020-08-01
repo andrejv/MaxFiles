@@ -35,7 +35,7 @@ A Maxima/wxMaxima implementation of [Poor Man's integrator](http://www-sop.inria
  *
  *   (++) correct and agrees with maple answer
  *   (+)  correct but differs from maple answer
- *   (--) failes (or takes too long)
+ *   (--) fails (or takes too long)
  *   (-)  wrong
  *
  *  (*) the Omega function is not supported in Maxima but can be defined as
