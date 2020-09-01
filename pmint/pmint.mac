@@ -16,7 +16,8 @@
  *  Implementation of some utility functions I could not find in maxima
  *
  **************************************/
-
+halfangles : false;
+ 
 define_variable(verbose_level, 0, integer)$
 pm_display(lev, [arg]) := if lev<=verbose_level then apply(print, arg)$
 
@@ -63,13 +64,14 @@ pmint_allcoeffs(expr, vars) := block([v,e,i,eqs:[expr],eqs1:[], nn],
  **************************************/
 
 define_variable(convert_trig_functions, true, boolean)$
+
 matchdeclare(%x, true)$
 defrule(sin2tan, sin(%x), 2*tan(%x/2)/(tan(%x/2)^2+1))$
 defrule(csc2tan, sin(%x), tan(%x/2)(tan(%x/2)^2+1)/(2*tan(%x/2)))$
 defrule(cos2tan, cos(%x), (1-tan(%x/2)^2)/(1+tan(%x/2)^2))$
 defrule(sec2tan, sec(%x), (1+tan(%x/2)^2)/(1-tan(%x/2)^2))$
 
-convert_to_tan(expr) := ratsimp(apply1(trigsimp(expr), sin2tan, cos2tan, sec2tan, csc2tan))$
+convert_to_tan(expr) := ratsimp(apply1(ratsimp(expr), sin2tan, cos2tan, sec2tan, csc2tan))$
 
 gradef(tan(x),  1+tan(x)^2)$
 gradef(tanh(x), 1-tanh(x)^2)$
@@ -86,8 +88,8 @@ gradef(omega(x), omega(x)/(1+omega(x)))$
 /*
 * Workarounds for Bessel functions
 possible to define directly
-gradef( bessel_j(n,x), x, (n*bessel_j(n,x))/x-bessel_j(n+1,x) );
-gradef( bessel_i(n,x), x, (n*bessel_i(n,x))/x+bessel_i(n+1,x) );
+gradef( bessel_j(n,x), 0, (n*bessel_j(n,x))/x-bessel_j(n+1,x) );
+gradef( bessel_i(n,x), 0, (n*bessel_i(n,x))/x+bessel_i(n+1,x) );
 but the computation is slow
 */
 
@@ -132,17 +134,44 @@ convert_bess2b(expr):=apply1(expr, bessj2b, bessj2b1, bessy2b1, bessy2b, bessi2b
 
 convert_b2bess(expr):=apply1(expr, b2bessj, b2bessj1, b2bessy, b2bessy1, b2bessi, b2bessi1, b2bessk, b2bessk1 );
 
+/*
+polylogarithms
+
+gradef(pli(n,x), 0, pli1(n,x)/x);
+
+defrule(li2pli, li[%n] ( %x), pli( %n, %x)) ;
+defrule(pli2li,  pli( %n, %x), li[%n]( %x)) ;
+defrule(pli2li1,  pli1( %n, %x), li[%n-1]( %x)) ;
+
+convert_li2p(expr):=apply1(expr, li2pli);
+convert_p2li(expr):=apply1(expr, pli2li,pli2li1);
+*/
+
 defrule(log2atan, log(%i+%x)-log(%x-%i), -2*%i*atan(%x)  );
 
 convert2atan(expr):=apply1(factor(expr), log2atan);
+
+matchdeclare([%m], atom);
+defrule(tan2sin, tan(%m/2),  sin(%m)/(1+cos(%m)))$
+convert_from_tan(expr):=ratsimp(apply1(expr, tan2sin))$
 /*
-matchdeclare([%n,%m], numberp);
+
 defrule(f2hg, %f[%n,%m], hg);
 convert_hg(expr):=apply1(expr, f2hg);
+
+
+lprod(lst):= block([], if listp(lst) then (
+	if oddp(length(lst)) then push(1, lst),  
+	substinpart("*", lst, 0)
+) elseif lst=0 then 0 else 'lprod(lst) );
+
+gradef(hg (la,x), 0, lprod('first(la))/ lprod('second(la))*hg1(la, x));
 */
+
 /**************************************
  *
- *   Special Darboux polynomials
+ *   Special Darboux polynomials p (x):
+ *   Def: Df(x) = p(x) * f(x)
  *   If the second parameter is false, only use it for log parts, otherwise use it
  *   for denominator too.
  *
@@ -152,11 +181,19 @@ put(tan, [ lambda([u], 1+u^2), false], 'darboux_poly)$
 put(tanh, [ lambda([u], 1-u^2), false], 'darboux_poly)$
 put(lambert_w, [ lambda([u], u), true], 'darboux_poly)$
 put(omega, [ lambda([u], u), true], 'darboux_poly)$
-put(%f, [ lambda([u], u), false], 'darboux_poly)$
-/*
-put(bessj, [ lambda([u], u), true], 'darboux_poly)$
-put(bessj1, [ lambda([u], u), true], 'darboux_poly)$
-*/
+
+put(bessj, [ lambda([u], u), false], 'darboux_poly)$
+put(bessj1, [ lambda([u], u), false], 'darboux_poly)$
+put(bessy, [ lambda([u], u), false], 'darboux_poly)$
+put(bessy1, [ lambda([u], u), false], 'darboux_poly)$
+put(bessi, [ lambda([u], u), false], 'darboux_poly)$
+put(bessi1, [ lambda([u], u), false], 'darboux_poly)$
+put(bessk, [ lambda([u], u), false], 'darboux_poly)$
+put(bessk1, [ lambda([u], u), false], 'darboux_poly)$
+
+/*put(hg1, [ lambda([u], u), false], 'darboux_poly)$*/
+
+
 
 get_special_polys(f, l) :=
   if atom(f) or  listp(f) then 0
@@ -220,8 +257,12 @@ pmints(intexp, [simpfun]):=block ([ret:nil ],
 /* checks if the the expression contans Bessel functions*/
 besselp(expr):=not (freeof(bessel_j, expr) and freeof(bessel_i, expr) and  freeof(bessel_y, expr) and  freeof(bessel_k, expr) );
 
+/* checks if the the expression contans trigonometric functions*/
+trigp(expr):=not (freeof(sin, expr) and freeof(cos, expr) and  freeof(tan, expr) and  freeof(cot, expr)
+and  freeof(sec, expr) and  freeof(csc, expr));
+
 pmint(expr, x) := block(
-  [ff, si, si1, li, lin, lout, ld, q, d, l, vars, dx, ls, fint, lc, si0, bconvert:false ],
+  [ff, si, si1, li, lin, lout, ld, q, d, l, vars, dx, ls, fint, lc, si0, bconvert:false, btrig:trigp(expr) ],
 
   /* 0) preproces expr */
   if convert_trig_functions then
@@ -229,7 +270,7 @@ pmint(expr, x) := block(
   else
     ff : expr,
  
-  if besselp( ff) then (
+  if besselp(ff) then (
 	ff: convert_bess2b(ff),
 	bconvert:true
   ),
@@ -266,19 +307,35 @@ pmint(expr, x) := block(
 
   /* 4) integrate substitution */
   fint : subst(lout, pm_integrate(subst(lin, ff), dx, q, vars, ls)),
- 
-  if not(atom(fint)) and op(fint)#'integrate then block([dfint : diff(fint, x)],
-    if trigrat(radcan(ratsimp(dfint-expr)))#0 then 
-		if trigrat(radcan(ratsimp(dfint-ff)))#0 then (
-			print("Solution check fails!"),
-			fint:'integrate(expr, x),
-			return(fint)
-	),
+  
+	
+   
+  if not(atom(fint)) and op(fint)#'integrate then block([dfint : diff(fint, x), re ],
+  display(fint, btrig),
+  /* checking the solution */
+  re:dfint-expr,
+
+  if expand(re,0)#0 then (
+	  if btrig then (re:trigrat(trigsimp(re)), print("Trigonometric simplification 1 " +re)),
+	re:ratsimp(re),
+	if re# 0 then (
+		re:radcan(re),
+		if re#0 then (
+			re:ratsimp(dfint-ff),
+			if re #0 then (
+				if btrig then ( re:trigrat(trigsimp(re)), print("Trigonometric simplification 2 " +re)),
+			if  radcan(re)#0 then (
+				print("Solution check fails!"+ re),
+				fint:'integrate(expr, x),
+				return(fint)
+	))))),
 	if bconvert then
 		fint: convert_b2bess(fint),
-	
+	if convert_trig_functions then (
+		fint : convert2atan(fint),
+		fint : convert_from_tan(ff)
+	),
 	fint
-	
   ) else
     'integrate(expr, x)
 )$
