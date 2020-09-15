@@ -31,7 +31,9 @@ atom_parts(expr) :=
   lreduce(union, map(atom_parts, args(expr)))
  );
 
-pmint_lcm(lst) := apply("*", lst)/lreduce('gcd, lst);
+pmint_lcm(lst) := if not emptyp(lst) then 
+		apply("*", lst)/lreduce('gcd, lst)
+		else lst;
 
 
 pmint_total_degree(expr) :=
@@ -65,7 +67,7 @@ pmint_allcoeffs(expr, vars) := block([v,e,i,eqs:[expr],eqs1:[], nn],
 
 define_variable(convert_trig_functions, true, boolean)$
 
-matchdeclare(%x, true)$
+matchdeclare([%x, %y], true)$
 defrule(sin2tan, sin(%x), 2*tan(%x/2)/(tan(%x/2)^2+1))$
 defrule(csc2tan, sin(%x), tan(%x/2)(tan(%x/2)^2+1)/(2*tan(%x/2)))$
 defrule(cos2tan, cos(%x), (1-tan(%x/2)^2)/(1+tan(%x/2)^2))$
@@ -147,9 +149,13 @@ convert_li2p(expr):=apply1(expr, li2pli);
 convert_p2li(expr):=apply1(expr, pli2li,pli2li1);
 */
 
-defrule(log2atan, log(%i+%x)-log(%x-%i), -2*%i*atan(%x)  );
+defrule(log2atan, log( (%i+%x)/(%x-%i)), -2*%i*atan(%x)  );
+defrule(log2atan1, %n*log((%x+%i)/(%x-%i)), -2*%n*%i*atan(%x)  );
+defrule(log2atan2, log((%x+%i)^%n/(%x-%i)^%n), -2*%n*%i*atan(%x)  );
 
-convert2atan(expr):=apply1(factor(expr), log2atan);
+convert2atan(expr):=block([ret],
+	apply1(logcontract(expr), log2atan, log2atan1, log2atan2)
+);
 
 matchdeclare([%m], atom);
 defrule(tan2sin, tan(%m/2),  sin(%m)/(1+cos(%m)))$
@@ -190,8 +196,12 @@ put(bessi, [ lambda([u], u), false], 'darboux_poly)$
 put(bessi1, [ lambda([u], u), false], 'darboux_poly)$
 put(bessk, [ lambda([u], u), false], 'darboux_poly)$
 put(bessk1, [ lambda([u], u), false], 'darboux_poly)$
+put(expintegral_ei, [ lambda([u], u), false], 'darboux_poly)$
 
-/*put(hg1, [ lambda([u], u), false], 'darboux_poly)$*/
+
+/*
+put(gamma_incomplete, [ lambda([u], u), false], 'darboux_poly)$
+put(hg1, [ lambda([u], u), false], 'darboux_poly)$*/
 
 
 
@@ -308,10 +318,10 @@ pmint(expr, x) := block(
   /* 4) integrate substitution */
   fint : subst(lout, pm_integrate(subst(lin, ff), dx, q, vars, ls)),
   
-	
+  
    
-  if not(atom(fint)) and op(fint)#'integrate then block([dfint : diff(fint, x), re ],
-  display(fint, btrig),
+  if not(mapatom(fint)) and freeof( 'integrate, fint) then block([dfint : diff(fint, x), re ],
+  display(fint),
   /* checking the solution */
   re:dfint-expr,
 
@@ -331,10 +341,12 @@ pmint(expr, x) := block(
 	))))),
 	if bconvert then
 		fint: convert_b2bess(fint),
+
 	if convert_trig_functions then (
-		fint : convert2atan(fint),
-		fint : convert_from_tan(ff)
+		/*fint : convert2atan(fint),*/
+		fint : convert_from_tan(fint)
 	),
+	/*display(fint),*/
 	fint
   ) else
     'integrate(expr, x)
