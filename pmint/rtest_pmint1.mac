@@ -1,0 +1,366 @@
+/* A collection of about 730 integrals with power functions.
+   The integrals are taken from functions.wolfram.com
+
+   OK   - The integral is solved by Maxima
+   NEW  - Solution after extension of the integrator (rev. 1.34)
+   NOUN - No solution a noun form is returned.  
+*/
+
+(kill(all),
+  load(pmint),
+  declare(z,complex,n,integer),
+  assume(n>0),
+  assume(notequal(v,0)),
+  domain:complex,
+  radexpand:true,
+  
+  /* This function checks if we get back the integrand.
+   *
+   * integral is the result of an integration, 
+   * var the integration variable, and
+   * simplifier a simplifying function. 
+   */
+  diffcheck(integral,var,simplifier):=
+     if op(integral)=nounify(integrate) then
+        integral
+     else 
+        simplifier(diff(integral,var)),
+        
+  factor_radcan(expr):=factor(radcan(expr)),
+  done);
+done;
+
+/* ----- Involving only one direct function --------------------------------- */
+
+/* Problem 2: OK */
+pmint(a^(c*z),z);
+a^(c*z)/(log(a)*c);
+
+/* Problem 3: OK */
+pmint(a^z,z);
+a^z/log(a);
+
+/* Problem 4: OK */
+pmint(%e^(a*z+b),z);
+%e^(a*z+b)/a;
+
+/* Problem 5: OK */
+pmint(%e^(a*z),z);
+%e^(a*z)/a;
+
+/* Problem 6: OK */
+pmint(%e^z,z);
+%e^z;
+
+/* ----- Power arguments and base a ----------------------------------------- */
+
+/* Problem 11: OK */
+pmint(a^(b*sqrt(z)),z),radcan,factor;
+2*(log(a)*b*sqrt(z)-1)*a^(b*sqrt(z))/(log(a)^2*b^2);
+
+/* ----- Power arguments and base %e ---------------------------------------- */
+
+
+/* Problem 19: OK */
+pmint(%e^(a*sqrt(z)),z),ratsimp,factor;
+2*(a*sqrt(z)-1)*%e^(a*sqrt(z))/a^2;
+
+
+
+/* Problem 22: Expected failure 
+ * See problem 14
+ */
+
+/* ----- Involving z^(v-1), arguments b*z and base a ------------------------ */
+
+
+/* ----- Involving z^(v-1), arguments a*z and base %e ----------------------- */
+
+/* Problem 31: OK */
+pmint(z*%e^(a*z),z), factor;
+(a*z-1)*%e^(a*z)/a^2;
+
+
+/* Problem 33: OK */
+pmint(z^2*%e^(a*z),z);
+(a^2*z^2-2*a*z+2)*%e^(a*z)/a^3;
+
+/* Problem 34: OK */
+pmint(z^3*%e^(a*z),z), factor;
+(a^3*z^3-3*a^2*z^2+6*a*z-6)*%e^(a*z)/a^4;
+
+/* Problem 35: OK */
+pmint(z^4*%e^(a*z),z), factor;
+(a^4*z^4-4*a^3*z^3+12*a^2*z^2-24*a*z+24)*%e^(a*z)/a^5;
+
+/* Problem 36: OK */
+pmint(z^5*%e^(a*z),z), factor;
+(a^5*z^5-5*a^4*z^4+20*a^3*z^3-60*a^2*z^2+120*a*z-120)*%e^(a*z)/a^6;
+
+/* Problem 37: OK */
+pmint(z^6*%e^(a*z),z), factor;
+(a^6*z^6-6*a^5*z^5+30*a^4*z^4-120*a^3*z^3+360*a^2*z^2-720*a*z+720)
+        *%e^(a*z)
+        /a^7;
+
+/* Problem 38: OK */
+pmint(z^7*%e^(a*z),z), factor;
+(a^7*z^7-7*a^6*z^6+42*a^5*z^5-210*a^4*z^4+840*a^3*z^3-2520*a^2*z^2
+               +5040*a*z-5040)
+        *%e^(a*z)
+        /a^8;
+
+/* Problem 39: OK */
+pmint(z^8*%e^(a*z),z), factor;
+(a^8*z^8-8*a^7*z^7+56*a^6*z^6-336*a^5*z^5+1680*a^4*z^4-6720*a^3*z^3
+               +20160*a^2*z^2-40320*a*z+40320)
+        *%e^(a*z)
+        /a^9;
+
+
+/* Problem 73: OK */
+pmint(z*%e^(a*z+b),z),factor;
+(a*z-1)*%e^(a*z+b)/a^2;
+
+
+/* ----- Involving z^(v-1), arguments b*z^r and base a ---------------------- */
+
+
+/* Problem 84: OK */
+pmint(z*%e^(a*z^2),z);
+%e^(a*z^2)/(2*a);
+
+/* Problem 88: OK */
+pmint(z^3*%e^(a*z^2),z), factor;
+(a*z^2-1)*%e^(a*z^2)/(2*a^2);
+
+
+/* Problem 92: OK */
+pmint(z^5*%e^(a*z^2),z),factor;
+(a^2*z^4-2*a*z^2+2)*%e^(a*z^2)/(2*a^3);
+
+ 
+/* Problem 99: OK */
+pmint(z*%e^(a*sqrt(z)),z);
+2*(a^3*z^(3/2)-3*a^2*z+6*a*sqrt(z)-6)*%e^(a*sqrt(z))/a^4;
+
+/* Problem 100: OK */
+pmint(z^2*%e^(a*sqrt(z)),z);
+2*(a^5*z^(5/2)-5*a^4*z^2+20*a^3*z^(3/2)-60*a^2*z+120*a*sqrt(z)-120)
+        *%e^(a*sqrt(z))
+        /a^6;
+
+/* Problem 101: OK */
+pmint(z^3*%e^(a*sqrt(z)),z);
+2*(a^7*z^(7/2)-7*a^6*z^3+42*a^5*z^(5/2)-210*a^4*z^2+840*a^3*z^(3/2)
+                     -2520*a^2*z+5040*a*sqrt(z)-5040)*%e^(a*sqrt(z))
+        /a^8;
+
+/* Problem 102: OK */
+pmint(z^4*%e^(a*sqrt(z)),z);
+2*(a^9*z^(9/2)-9*a^8*z^4+72*a^7*z^(7/2)-504*a^6*z^3+3024*a^5*z^(5/2)
+                     -15120*a^4*z^2+60480*a^3*z^(3/2)-181440*a^2*z
+                     +362880*a*sqrt(z)-362880)*%e^(a*sqrt(z))
+        /a^10;
+
+/* Problem 103: OK */
+pmint(z^5*%e^(a*sqrt(z)),z);
+2*(a^11*z^(11/2)-11*a^10*z^5+110*a^9*z^(9/2)-990*a^8*z^4
+                       +7920*a^7*z^(7/2)-55440*a^6*z^3+332640*a^5*z^(5/2)
+                       -1663200*a^4*z^2+6652800*a^3*z^(3/2)-19958400*a^2*z
+                       +39916800*a*sqrt(z)-39916800)*%e^(a*sqrt(z))
+        /a^12;
+
+
+/* ----- Involving z^(v-1), arguments b*z^r and base a ---------------------- */
+ 
+
+/* ----- Involving (a*z^2+b)^-n and base %e --------------------------------- */
+
+
+/* ----- Involving (a*z^2+b*z+c)^-n ----------------------------------------- */
+
+
+/* ----- Involving (a*z*b)^w and base %e ------------------------------------ */
+ 
+ 
+ 
+/* ----- Involving a*z^2+b*z+c ---------------------------------------------- */
+
+ 
+
+/* ----- Involving a*z^2+b -------------------------------------------------- */
+
+ 
+ 
+
+/* Involving a*z^2+c -------------------------------------------------------- */
+
+ 
+ 
+
+/* Involving a*z^2+b/z^2 ---------------------------------------------------- */
+
+ 
+
+/* ----- Involving az^2+b/z^2+c --------------------------------------------- */
+
+ 
+
+/* ----- Involving a*z+b*sqrt(z)+c ------------------------------------------ */
+
+ 
+/* ----- Involving a*z+b*sqrt(z) -------------------------------------------- */
+
+ 
+/* ----- Involving a*z^r+c -------------------------------------------------- */
+
+ 
+
+/* Problem 156: OK */
+pmint(%e^(c+a*sqrt(z)),z), factor;
+2*(a*%e^c*sqrt(z)-%e^c)*%e^(a*sqrt(z))/a^2;
+
+/* ----- Arguments involving exponential functions -------------------------- */
+ 
+/* ----- Involving trigonometric functions ---------------------------------- */
+ 
+
+/* Arguments invovling inverse hyperbolic functions ------------------------- */
+
+
+ 
+
+/* Problem 189: NEW 08/2010 
+ * This example works nicely for x>0. For z complex we get abs(z) expressions.
+ */
+
+
+
+/* --- For special cases n the integral is transformed to type 5 ------------ */
+ 
+ 
+
+/* ----- Involving z^(2*n)*d^(a*z^2+b/Z^2) ---------------------------------- */
+ 
+/* ----- Involving powers of exp with arguments c*z and base a -------------- */
+
+/* Problem 226: OK */
+pmint((a^(c*z))^v,z);
+(a^(c*z))^v/(c*v*log(a));
+
+/* Problem 227: OK */
+pmint((a^z)^v,z);
+(a^z)^v/(log(a)*v);
+
+/* ----- with arguments c*z and base %e ------------------------------------- */
+
+/* The following examples 217 - 224 are not really correct, because Maxima 
+ * simplifies (%e^(c*z))^v -> %e^(v*c*z), which is not correct in general.
+ */
+
+/* Problem 228: OK */
+pmint((%e^(c*z))^v,z);
+(%e^(c*z))^v/(c*v);
+
+/* Problem 229: OK */
+pmint((%e^z)^v,z);
+(%e^z)^v/v;
+
+/* Problem 230: OK */
+pmint(sqrt(%e^(c*z)),z);
+2*sqrt(%e^(c*z))/c;
+
+/* Problem 231: OK */
+pmint((%e^(c*z))^(3/2),z);
+2*(%e^(c*z))^(3/2)/(3*c);
+
+/* Problem 232: OK */
+pmint((%e^(c*z))^(5/2),z);
+2*(%e^(c*z))^(5/2)/(5*c);
+
+/* Problem 233: OK */
+pmint(1/sqrt(%e^(c*z)),z);
+-2/(c*sqrt(%e^(c*z)));
+
+/* Problem 234: OK */
+pmint(1/(%e^(c*z))^(3/2),z);
+-2*(%e^(c*z))^(-3/2)/(3*c);
+
+/* Problem 235: OK */
+pmint(1/(%e^(c*z))^(5/2),z);
+-2*(%e^(c*z))^(-5/2)/(5*c);
+
+/* ----- with arguments c*z+b and base a ------------------------------------ */
+
+/* Problem 236: OK */
+pmint((a^(c*z+b))^v,z);
+(a^(c*z+b))^v/(log(a)*c*v);
+
+/* -----  with arguments c*z+b and base %e ---------------------------------- */
+
+/* Problem 237: (OK) wrong simplification */
+pmint((%e^(c*z+b))^v,z);
+(%e^(c*z+b))^v/(c*v);
+
+/* ----- with arguments c*z^r and base a ------------------------------------ */
+
+/* Problem 238: NEW 1a */
+  
+/* ----- with arguments c*z^r ----------------------------------------------- */
+
+ 
+
+/* Problem 242: (OK) wrong simplification*/
+
+/* Problem 243: (OK) wrong simplification*/
+pmint((%e^(c*sqrt(z)))^v,z), domain:real;
+2*(c*v*sqrt(z)-1)*%e^(c*v*sqrt(z))/(c^2*v^2)$
+
+/* ----- with arguments c*z^r+d and base a ---------------------------------- */
+
+/* ----- with arguments c*z^r+d --------------------------------------------- */
+ 
+
+/* ----- with arguments c*(z^r)^p and base a -------------------------------- */
+
+ 
+/* Problem 251: (OK) wrong simplification */
+pmint((a^(c*(z^r)^(1/r)))^v,z), domain:real;
+%e^(log(a)*c*v*z)/(log(a)*c*v)$
+
+/* Problem 252: (OK) wrong simplification */
+pmint((a^(c*sqrt(z^2)))^v,z), domain:real;
+%e^(log(a)*c*v*z)/(log(a)*c*v)$
+ 
+
+/* Problem 254: (OK) wrong simplification */
+pmint((%e^(c*(z^r)^(1/r)))^v,z), domain:real;
+%e^(c*v*z)/(c*v)$
+
+/* Problem 255: (OK) wrong simplification */
+pmint((%e^(c*sqrt(z^2)))^v,z), domain:real;
+%e^(c*v*z)/(c*v)$
+
+/* ----- with arguments c*(z^r)^p+d and base a ------------------------------ */
+
+ 
+
+/* Problem 257: (OK) wrong simplification */
+pmint((a^(d+c*(z^r)^(1/r)))^v,z), domain:real;
+a^(d*v)*%e^(log(a)*c*v*z)/(log(a)*c*v);
+
+/* Problem 258: (OK) wrong simplification */
+pmint((a^(d+c*sqrt(z^2)))^v,z), domain:real;
+a^(d*v)*%e^(log(a)*c*v*z)/(log(a)*c*v);
+
+
+/* Tidy up */
+(reset(),
+ forget(n>0,notequal(v,0)),
+ remove(z,complex,n,integer),
+ kill(all),
+ 0);
+0;
+
+/* ----- End of file -------------------------------------------------------- */
